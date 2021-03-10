@@ -50,18 +50,17 @@ def serialize(root):
 
 def deserialize(s):
     # extract node data
-    node_match = re.match(r'^\{(\w+)\,(.*)\}$', s)
+    node_match = re.match(r'^\{([\w\.]+)\,(.*)\}$', s)
     node = Node(node_match.group(1))
-
-    left_right_match = re.match(r'(\{.*\})\,(\{.*\})', node_match.group(2))
-
-    if left_right_match:
-        if left_right_match.group(1) is not None:
-            node.left = deserialize(left_right_match.group(1))
-
-        if left_right_match.group(2) is not None:
-            node.right = deserialize(left_right_match.group(2))
     
+    # check left node present
+    if re.compile(r'^None.*').search(node_match.group(2)) is None:
+        node.left = deserialize(re.match(r'(^\{.*\})\,.*', node_match.group(2)).group(1))
+
+    # check right node present
+    if re.compile(r'.*None$').search(node_match.group(2)) is None:
+        node.right = deserialize(re.match(r'.*,(\{.*\}$)', node_match.group(2)).group(1))
+
     return node
         
 if __name__ == '__main__':
